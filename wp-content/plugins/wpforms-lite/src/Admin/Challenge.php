@@ -115,7 +115,7 @@ class Challenge {
 	 *
 	 * @return bool
 	 */
-	public function is_form_embed_page() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function is_form_embed_page() {
 
 		if ( ! function_exists( 'get_current_screen' ) || ! is_admin() || ! is_user_logged_in() ) {
 			return false;
@@ -175,7 +175,7 @@ class Challenge {
 
 			wp_enqueue_script(
 				'wpforms-challenge-admin',
-				WPFORMS_PLUGIN_URL . "assets/js/components/admin/challenge/challenge-admin{$min}.js",
+				WPFORMS_PLUGIN_URL . "assets/js/admin/challenge/challenge-admin{$min}.js",
 				[ 'jquery' ],
 				WPFORMS_VERSION,
 				true
@@ -185,9 +185,10 @@ class Challenge {
 				'wpforms-challenge-admin',
 				'wpforms_challenge_admin',
 				[
-					'nonce'        => wp_create_nonce( 'wpforms_challenge_ajax_nonce' ),
-					'minutes_left' => absint( $this->minutes ),
-					'option'       => $this->get_challenge_option(),
+					'nonce'          => wp_create_nonce( 'wpforms_challenge_ajax_nonce' ),
+					'minutes_left'   => absint( $this->minutes ),
+					'option'         => $this->get_challenge_option(),
+					'frozen_tooltip' => esc_html__( 'Challenge is frozen.', 'wpforms-lite' ),
 				]
 			);
 		}
@@ -211,7 +212,7 @@ class Challenge {
 
 			wp_enqueue_script(
 				'wpforms-challenge-core',
-				WPFORMS_PLUGIN_URL . "assets/js/components/admin/challenge/challenge-core{$min}.js",
+				WPFORMS_PLUGIN_URL . "assets/js/admin/challenge/challenge-core{$min}.js",
 				[ 'jquery', 'tooltipster', 'wpforms-challenge-admin' ],
 				WPFORMS_VERSION,
 				true
@@ -222,7 +223,7 @@ class Challenge {
 
 			wp_enqueue_script(
 				'wpforms-challenge-builder',
-				WPFORMS_PLUGIN_URL . "assets/js/components/admin/challenge/challenge-builder{$min}.js",
+				WPFORMS_PLUGIN_URL . "assets/js/admin/challenge/challenge-builder{$min}.js",
 				[ 'jquery', 'tooltipster', 'wpforms-challenge-core', 'wpforms-builder' ],
 				WPFORMS_VERSION,
 				true
@@ -240,7 +241,7 @@ class Challenge {
 
 			wp_enqueue_script(
 				'wpforms-challenge-embed',
-				WPFORMS_PLUGIN_URL . "assets/js/components/admin/challenge/challenge-embed{$min}.js",
+				WPFORMS_PLUGIN_URL . "assets/js/admin/challenge/challenge-embed{$min}.js",
 				[ 'jquery', 'tooltipster', 'wpforms-challenge-core' ],
 				WPFORMS_VERSION,
 				true
@@ -363,7 +364,8 @@ class Challenge {
 	 */
 	public function website_has_forms() {
 
-		return (bool) wpforms()->get( 'form' )->get(
+		// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters
+		return (bool) wpforms()->obj( 'form' )->get(
 			'',
 			[
 				'numberposts'            => 1,
@@ -372,7 +374,7 @@ class Challenge {
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
-				'suppress_filters'       => true,
+				'suppress_filters'       => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters
 			]
 		);
 	}
@@ -465,11 +467,11 @@ class Challenge {
 	 *
 	 * @return bool
 	 */
-	public function challenge_can_start() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function challenge_can_start() {
 
 		static $can_start = null;
 
-		if ( ! is_null( $can_start ) ) {
+		if ( $can_start !== null ) {
 			return $can_start;
 		}
 
@@ -477,11 +479,28 @@ class Challenge {
 			$can_start = false;
 		}
 
+		// Challenge is only available on WPForms admin pages or Builder page.
+		if ( ! wpforms_is_admin_page() && ! wpforms_is_admin_page( 'builder' ) ) {
+			$can_start = false;
+
+			// No need to check something else in this case.
+			return false;
+		}
+
+		// The challenge should not start if this is the Forms' Overview page.
+		if ( wpforms_is_admin_page( 'overview' ) ) {
+			$can_start = false;
+
+			// No need to check something else in this case.
+			return false;
+		}
+
+		// Force start the Challenge.
 		if ( $this->challenge_force_start() && ! $this->is_builder_page() && ! $this->is_form_embed_page() ) {
 			$can_start = true;
 
 			// No need to check something else in this case.
-			return $can_start;
+			return true;
 		}
 
 		if ( $this->challenge_finished() ) {
@@ -492,7 +511,7 @@ class Challenge {
 			$can_start = false;
 		}
 
-		if ( is_null( $can_start ) ) {
+		if ( $can_start === null ) {
 			$can_start = true;
 		}
 
@@ -622,7 +641,7 @@ class Challenge {
 	 *
 	 * @since 1.5.0
 	 */
-	public function save_challenge_option_ajax() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function save_challenge_option_ajax() {
 
 		check_admin_referer( 'wpforms_challenge_ajax_nonce' );
 
@@ -674,7 +693,10 @@ class Challenge {
 		$message = ! empty( $_POST['contact_data']['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contact_data']['message'] ) ) : '';
 		$email   = '';
 
-		if ( ! empty( $_POST['contact_data']['contact_me'] ) && $_POST['contact_data']['contact_me'] === 'true' ) {
+		if (
+			( ! empty( $_POST['contact_data']['contact_me'] ) && $_POST['contact_data']['contact_me'] === 'true' )
+			|| wpforms()->is_pro()
+		) {
 			$current_user = wp_get_current_user();
 			$email        = $current_user->user_email;
 			$this->set_challenge_option( [ 'feedback_contact_me' => true ] );
@@ -692,8 +714,9 @@ class Challenge {
 					'fields' => [
 						2 => $message,
 						3 => $email,
-						4 => ucfirst( wpforms_get_license_type() ),
+						4 => $this->get_challenge_license_type(),
 						5 => wpforms()->version,
+						6 => wpforms_get_license_key(),
 					],
 				],
 			],
@@ -707,6 +730,24 @@ class Challenge {
 
 		$this->set_challenge_option( [ 'feedback_sent' => true ] );
 		wp_send_json_success();
+	}
+
+	/**
+	 * Get the current WPForms license type as it pertains to the challenge feedback form.
+	 *
+	 * @since 1.8.1
+	 *
+	 * @return string The currently active license type.
+	 */
+	private function get_challenge_license_type() {
+
+		$license_type = wpforms_get_license_type();
+
+		if ( $license_type === false ) {
+			$license_type = wpforms()->is_pro() ? 'Unknown' : 'Lite';
+		}
+
+		return ucfirst( $license_type );
 	}
 
 	/**

@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Load the field types.
  *
@@ -17,14 +22,12 @@ class WPForms_Fields {
 	}
 
 	/**
-	 * Load and init the base field class.
+	 * Initialize hooks.
 	 *
 	 * @since 1.2.8
+	 * @since 1.8.2 Moved base class loading to \WPForms\WPForms::includes.
 	 */
 	public function init() {
-
-		// Parent class template.
-		require_once WPFORMS_PLUGIN_DIR . 'includes/fields/class-base.php';
 
 		$this->hooks();
 	}
@@ -44,6 +47,7 @@ class WPForms_Fields {
 	 * Load default field types.
 	 *
 	 * @since 1.0.0
+	 * @since 1.9.4 Removed Pro fields from the list. They loaded in the main Loader class.
 	 */
 	public function load() {
 
@@ -53,36 +57,15 @@ class WPForms_Fields {
 			'select',
 			'radio',
 			'checkbox',
-			'divider',
-			'entry-preview',
 			'email',
-			'url',
-			'hidden',
-			'html',
-			'content',
 			'name',
-			'password',
-			'address',
-			'phone',
-			'date-time',
 			'number',
-			'page-break',
-			'rating',
-			'file-upload',
-			'payment-single',
-			'payment-multiple',
-			'payment-checkbox',
-			'payment-dropdown',
-			'payment-credit-card',
-			'payment-total',
 			'number-slider',
-			'richtext',
 			'internal-information',
-			'layout',
 		];
 
 		// Include GDPR Checkbox field if GDPR enhancements are enabled.
-		if ( wpforms_setting( 'gdpr', false ) ) {
+		if ( wpforms_setting( 'gdpr' ) ) {
 			$fields[] = 'gdpr-checkbox';
 		}
 
@@ -104,13 +87,6 @@ class WPForms_Fields {
 
 			if ( file_exists( $file ) ) {
 				require_once $file;
-				continue;
-			}
-
-			$pro_file = WPFORMS_PLUGIN_DIR . 'pro/includes/fields/class-' . $field . '.php';
-
-			if ( wpforms()->is_pro() && file_exists( $pro_file ) ) {
-				require_once $pro_file;
 			}
 		}
 

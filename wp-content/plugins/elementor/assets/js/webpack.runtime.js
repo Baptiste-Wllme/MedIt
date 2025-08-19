@@ -1,4 +1,4 @@
-/*! elementor - v3.8.0 - 30-10-2022 */
+/*! elementor - v3.31.0 - 11-08-2025 */
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({});
@@ -21,7 +21,7 @@
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -123,19 +123,28 @@
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames not based on template
-/******/ 			if (chunkId === "lightbox") return "" + chunkId + ".9b08bd862235e434184e.bundle.js";
-/******/ 			if (chunkId === "text-path") return "" + chunkId + ".8da48d7e728e0777ffff.bundle.js";
-/******/ 			if (chunkId === "accordion") return "" + chunkId + ".342cf6dd66b8f56ed3e2.bundle.js";
-/******/ 			if (chunkId === "alert") return "" + chunkId + ".e48284fab1c1d836b7a9.bundle.js";
-/******/ 			if (chunkId === "counter") return "" + chunkId + ".e846c2e2fcca06b5908b.bundle.js";
-/******/ 			if (chunkId === "progress") return "" + chunkId + ".d9ed4339cb1bcc2aeb1c.bundle.js";
-/******/ 			if (chunkId === "tabs") return "tabs.785afd5b771f1061821b.bundle.js";
-/******/ 			if (chunkId === "toggle") return "" + chunkId + ".2ddb14677716fc476a4a.bundle.js";
-/******/ 			if (chunkId === "video") return "" + chunkId + ".633bc52e4366283f5941.bundle.js";
-/******/ 			if (chunkId === "image-carousel") return "" + chunkId + ".6fe677529cc17d56624d.bundle.js";
-/******/ 			if (chunkId === "text-editor") return "" + chunkId + ".99c79ecbd600142e0f90.bundle.js";
-/******/ 			if (chunkId === "wp-audio") return "" + chunkId + ".d0fd65867cf98c8b6b3d.bundle.js";
-/******/ 			if (chunkId === "container") return "" + chunkId + ".98da79015d2200c667aa.bundle.js";
+/******/ 			if (chunkId === "lightbox") return "" + chunkId + ".875994a349be8712b41c.bundle.js";
+/******/ 			if (chunkId === "text-path") return "" + chunkId + ".ffadd93cf796f64a4d61.bundle.js";
+/******/ 			if (chunkId === "accordion") return "" + chunkId + ".7b5b5744bdd225280eca.bundle.js";
+/******/ 			if (chunkId === "alert") return "" + chunkId + ".b696182ec6f18a35bc69.bundle.js";
+/******/ 			if (chunkId === "counter") return "" + chunkId + ".f359dee9199f5aad06c6.bundle.js";
+/******/ 			if (chunkId === "progress") return "" + chunkId + ".5d8492a023e85c6cc0e0.bundle.js";
+/******/ 			if (chunkId === "tabs") return "tabs.e808857358793ac13db5.bundle.js";
+/******/ 			if (chunkId === "toggle") return "" + chunkId + ".375da8e2f6fed12731c2.bundle.js";
+/******/ 			if (chunkId === "video") return "" + chunkId + ".d862fafddbe5d05459f3.bundle.js";
+/******/ 			if (chunkId === "image-carousel") return "" + chunkId + ".1a3e0c6222562304eed5.bundle.js";
+/******/ 			if (chunkId === "text-editor") return "" + chunkId + ".bd4eccbd156d0b1fc3cf.bundle.js";
+/******/ 			if (chunkId === "wp-audio") return "" + chunkId + ".c91cab3152c3f241f266.bundle.js";
+/******/ 			if (chunkId === "nested-tabs") return "" + chunkId + ".213892f3e7a826d32481.bundle.js";
+/******/ 			if (chunkId === "nested-accordion") return "" + chunkId + ".a0f28ea648b29da812a1.bundle.js";
+/******/ 			if (chunkId === "contact-buttons") return "" + chunkId + ".c21325756a91b795f8e4.bundle.js";
+/******/ 			if (chunkId === "floating-bars") return "" + chunkId + ".7efeeb8b098e55999ff1.bundle.js";
+/******/ 			if (chunkId === "shared-frontend-handlers") return "" + chunkId + ".a82dc0e60728c9cb9860.bundle.js";
+/******/ 			if (chunkId === "shared-editor-handlers") return "" + chunkId + ".22c8f376e58bdba40f71.bundle.js";
+/******/ 			if (chunkId === "container-editor-handlers") return "" + chunkId + ".11e3f73cbe2c3c5ffe24.bundle.js";
+/******/ 			if (chunkId === "section-frontend-handlers") return "" + chunkId + ".d0665d28b9f0b188fe4f.bundle.js";
+/******/ 			if (chunkId === "section-editor-handlers") return "" + chunkId + ".46a034cbaaa10c6afa92.bundle.js";
+/******/ 			if (chunkId === "nested-title-keyboard-handler") return "" + chunkId + ".967db65f6ba460c1f2e9.bundle.js";
 /******/ 			// return url for filenames based on template
 /******/ 			return undefined;
 /******/ 		};
@@ -161,7 +170,7 @@
 /******/ 	/* webpack/runtime/load script */
 /******/ 	(() => {
 /******/ 		var inProgress = {};
-/******/ 		var dataWebpackPrefix = "elementor:";
+/******/ 		var dataWebpackPrefix = "elementorFrontend:";
 /******/ 		// loadScript function to load a script via script tag
 /******/ 		__webpack_require__.l = (url, done, key, chunkId) => {
 /******/ 			if(inProgress[url]) { inProgress[url].push(done); return; }
@@ -183,6 +192,7 @@
 /******/ 					script.setAttribute("nonce", __webpack_require__.nc);
 /******/ 				}
 /******/ 				script.setAttribute("data-webpack", dataWebpackPrefix + key);
+/******/ 		
 /******/ 				script.src = url;
 /******/ 			}
 /******/ 			inProgress[url] = [done];
@@ -196,7 +206,6 @@
 /******/ 				doneFns && doneFns.forEach((fn) => (fn(event)));
 /******/ 				if(prev) return prev(event);
 /******/ 			}
-/******/ 			;
 /******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
 /******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
 /******/ 			script.onload = onScriptComplete.bind(null, script.onload);
@@ -221,17 +230,20 @@
 /******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
 /******/ 		var document = __webpack_require__.g.document;
 /******/ 		if (!scriptUrl && document) {
-/******/ 			if (document.currentScript)
-/******/ 				scriptUrl = document.currentScript.src
+/******/ 			if (document.currentScript && document.currentScript.tagName.toUpperCase() === 'SCRIPT')
+/******/ 				scriptUrl = document.currentScript.src;
 /******/ 			if (!scriptUrl) {
 /******/ 				var scripts = document.getElementsByTagName("script");
-/******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
+/******/ 				if(scripts.length) {
+/******/ 					var i = scripts.length - 1;
+/******/ 					while (i > -1 && (!scriptUrl || !/^http(s?):/.test(scriptUrl))) scriptUrl = scripts[i--].src;
+/******/ 				}
 /******/ 			}
 /******/ 		}
 /******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
 /******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
 /******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
-/******/ 		scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+/******/ 		scriptUrl = scriptUrl.replace(/^blob:/, "").replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
 /******/ 		__webpack_require__.p = scriptUrl;
 /******/ 	})();
 /******/ 	
@@ -320,7 +332,7 @@
 /******/ 			return __webpack_require__.O(result);
 /******/ 		}
 /******/ 		
-/******/ 		var chunkLoadingGlobal = self["webpackChunkelementor"] = self["webpackChunkelementor"] || [];
+/******/ 		var chunkLoadingGlobal = self["webpackChunkelementorFrontend"] = self["webpackChunkelementorFrontend"] || [];
 /******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
 /******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
 /******/ 	})();

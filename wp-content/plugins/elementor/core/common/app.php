@@ -7,8 +7,10 @@ use Elementor\Core\Common\Modules\Finder\Module as Finder;
 use Elementor\Core\Common\Modules\Connect\Module as Connect;
 use Elementor\Core\Common\Modules\EventTracker\Module as Event_Tracker;
 use Elementor\Core\Files\Uploads_Manager;
+use Elementor\Core\Settings\Manager as SettingsManager;
 use Elementor\Icons_Manager;
 use Elementor\Plugin;
+use Elementor\Utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -34,9 +36,9 @@ class App extends BaseApp {
 	public function __construct() {
 		$this->add_default_templates();
 
-		add_action( 'elementor/editor/before_enqueue_scripts', [ $this, 'register_scripts' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'elementor/editor/before_enqueue_scripts', [ $this, 'register_scripts' ], 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ], 9 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ], 9 );
 
 		add_action( 'elementor/editor/before_enqueue_styles', [ $this, 'register_styles' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_styles' ] );
@@ -180,6 +182,13 @@ class App extends BaseApp {
 			],
 			ELEMENTOR_VERSION
 		);
+
+		wp_enqueue_style(
+			'e-theme-ui-light',
+			$this->get_css_assets_url( 'theme-light' ),
+			[],
+			ELEMENTOR_VERSION
+		);
 	}
 
 	/**
@@ -231,16 +240,24 @@ class App extends BaseApp {
 	 */
 	protected function get_init_settings() {
 		$active_experimental_features = Plugin::$instance->experiments->get_active_features();
+		$all_experimental_features = Plugin::$instance->experiments->get_features();
 
 		$active_experimental_features = array_fill_keys( array_keys( $active_experimental_features ), true );
+		$all_experimental_features = array_map(
+			function( $feature ) {
+				return Plugin::$instance->experiments->is_feature_active( $feature['name'] );
+			},
+			$all_experimental_features
+		);
 
 		$config = [
 			'version' => ELEMENTOR_VERSION,
 			'isRTL' => is_rtl(),
 			'isDebug' => ( defined( 'WP_DEBUG' ) && WP_DEBUG ),
-			'isElementorDebug' => ( defined( 'ELEMENTOR_DEBUG' ) && ELEMENTOR_DEBUG ),
+			'isElementorDebug' => Utils::is_elementor_debug(),
 			'activeModules' => array_keys( $this->get_components() ),
 			'experimentalFeatures' => $active_experimental_features,
+			'allExperimentalFeatures' => $all_experimental_features,
 			'urls' => [
 				'assets' => ELEMENTOR_ASSETS_URL,
 				'rest' => get_rest_url(),
@@ -266,6 +283,7 @@ class App extends BaseApp {
 	 * Add default templates.
 	 *
 	 * Register common app default templates.
+	 *
 	 * @since 2.3.0
 	 * @access private
 	 */

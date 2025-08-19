@@ -1,11 +1,13 @@
 <?php
 namespace Elementor\App\Modules\KitLibrary\Data;
 
+use Elementor\Core\Common\Modules\Connect\Module as ConnectModule;
 use Elementor\Core\Utils\Collection;
 use Elementor\Data\V2\Base\Exceptions\Error_404;
 use Elementor\Data\V2\Base\Exceptions\WP_Error_Exception;
 use Elementor\Modules\Library\User_Favorites;
 use Elementor\App\Modules\KitLibrary\Connect\Kit_Library;
+use Elementor\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -18,7 +20,7 @@ class Repository {
 	 */
 	const SUBSCRIPTION_PLAN_FREE_TAG = 'Free';
 
-	const TAXONOMIES_KEYS = [ 'tags', 'categories', 'features', 'types' ];
+	const TAXONOMIES_KEYS = [ 'tags', 'categories', 'main_category', 'third_category', 'features', 'types' ];
 
 	const KITS_CACHE_KEY = 'elementor_remote_kits';
 	const KITS_TAXONOMIES_CACHE_KEY = 'elementor_remote_kits_taxonomies';
@@ -83,7 +85,7 @@ class Repository {
 			$manifest = $this->api->get_manifest( $id );
 
 			if ( is_wp_error( $manifest ) ) {
-				throw new WP_Error_Exception( $manifest );
+				throw new WP_Error_Exception( esc_html( $manifest ) );
 			}
 		}
 
@@ -126,7 +128,7 @@ class Repository {
 		$response = $this->api->download_link( $id );
 
 		if ( is_wp_error( $response ) ) {
-			throw new WP_Error_Exception( $response );
+			throw new WP_Error_Exception( esc_html( $response ) );
 		}
 
 		return [ 'download_link' => $response->download_link ];
@@ -142,7 +144,7 @@ class Repository {
 		$kit = $this->find( $id, [ 'manifest_included' => false ] );
 
 		if ( ! $kit ) {
-			throw new Error_404( __( 'Kit not found', 'elementor' ), 'kit_not_found' );
+			throw new Error_404( esc_html__( 'Kit not found', 'elementor' ), 'kit_not_found' );
 		}
 
 		$this->user_favorites->add( 'elementor', 'kits', $kit['id'] );
@@ -162,7 +164,7 @@ class Repository {
 		$kit = $this->find( $id, [ 'manifest_included' => false ] );
 
 		if ( ! $kit ) {
-			throw new Error_404( __( 'Kit not found', 'elementor' ), 'kit_not_found' );
+			throw new Error_404( esc_html__( 'Kit not found', 'elementor' ), 'kit_not_found' );
 		}
 
 		$this->user_favorites->remove( 'elementor', 'kits', $kit['id'] );
@@ -180,11 +182,29 @@ class Repository {
 	private function get_kits_data( $force_api_request = false ) {
 		$data = get_transient( static::KITS_CACHE_KEY );
 
+		$experiments_manager = Plugin::$instance->experiments;
+		$kits_editor_layout_type = $experiments_manager->is_feature_active( 'container' ) ? 'container_flexbox' : '';
+
 		if ( ! $data || $force_api_request ) {
-			$data = $this->api->get_all();
+			$args = [
+				'body' => [
+					'editor_layout_type' => $kits_editor_layout_type,
+				],
+			];
+
+			/**
+			 * Filters arguments for the request to the Kits API.
+			 *
+			 * @since 3.11.0
+			 *
+			 * @param array[] $args Array of http arguments.
+			 */
+			$args = apply_filters( 'elementor/kit-library/get-kits-data/args', $args );
+
+			$data = $this->api->get_all( $args );
 
 			if ( is_wp_error( $data ) ) {
-				throw new WP_Error_Exception( $data );
+				throw new WP_Error_Exception( esc_html( $data ) );
 			}
 
 			set_transient( static::KITS_CACHE_KEY, $data, static::KITS_CACHE_TTL_HOURS * HOUR_IN_SECONDS );
@@ -205,7 +225,7 @@ class Repository {
 			$data = $this->api->get_taxonomies();
 
 			if ( is_wp_error( $data ) ) {
-				throw new WP_Error_Exception( $data );
+				throw new WP_Error_Exception( esc_html( $data ) );
 			}
 
 			set_transient( static::KITS_TAXONOMIES_CACHE_KEY, $data, static::KITS_TAXONOMIES_CACHE_TTL_HOURS * HOUR_IN_SECONDS );
@@ -221,10 +241,21 @@ class Repository {
 	 * @return array
 	 */
 	private function transform_kit_api_response( $kit, $manifest = null ) {
-		$subscription_plan_tag = $this->subscription_plans->get( $kit->access_level );
+		// BC: Support legacy APIs that don't have access tiers.
+		if ( isset( $kit->access_tier ) ) {
+			$access_tier = $kit->access_tier;
+		} else {
+			$access_tier = 0 === $kit->access_level
+				? ConnectModule::ACCESS_TIER_FREE
+				: ConnectModule::ACCESS_TIER_ESSENTIAL;
+		}
 
-		$taxonomies = ( new Collection( (array) $kit ) )
-			->only( static::TAXONOMIES_KEYS )
+		$subscription_plan_tag = $this->subscription_plans->get( $access_tier );
+
+		$taxonomies = ( new Collection( ( (array) $kit )['taxonomies'] ) )
+			->filter( function ( $taxonomy ) {
+				return in_array( $taxonomy->type, self::TAXONOMIES_KEYS );
+			} )
 			->flatten()
 			->pluck( 'name' )
 			->push( $subscription_plan_tag ? $subscription_plan_tag : self::SUBSCRIPTION_PLAN_FREE_TAG );
@@ -235,6 +266,7 @@ class Repository {
 				'title' => $kit->title,
 				'thumbnail_url' => $kit->thumbnail,
 				'access_level' => $kit->access_level,
+				'access_tier' => $access_tier,
 				'keywords' => $kit->keywords,
 				'taxonomies' => $taxonomies->values(),
 				'is_favorite' => $this->user_favorites->exists( 'elementor', 'kits', $kit->_id ),
@@ -244,7 +276,6 @@ class Repository {
 				'popularity_index' => isset( $kit->popularity_index ) ? $kit->popularity_index : 0,
 				'created_at' => isset( $kit->created_at ) ? $kit->created_at : null,
 				'updated_at' => isset( $kit->updated_at ) ? $kit->updated_at : null,
-				//
 			],
 			$manifest ? $this->transform_manifest_api_response( $manifest ) : []
 		);
@@ -299,5 +330,9 @@ class Repository {
 		$this->api = $kit_library;
 		$this->user_favorites = $user_favorites;
 		$this->subscription_plans = $subscription_plans;
+	}
+
+	public static function clear_cache() {
+		delete_transient( static::KITS_CACHE_KEY );
 	}
 }
