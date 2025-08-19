@@ -81,10 +81,18 @@ $lien=get_field('lien_google_maps', 161);
 <!-- Code pour fermer la popup -->
 
 <script>
-$('.popup-close').click(function(){
-	$(this).parent().hide();
-})
+document.addEventListener('DOMContentLoaded', function() {
+    const closeBtn = document.querySelector('.popup-close');
+    const popupOverlay = document.querySelector('.popup-overlay');
+
+    if(closeBtn && popupOverlay){
+        closeBtn.addEventListener('click', function() {
+            popupOverlay.style.display = 'none';
+        });
+    }
+});
 </script>
+
 
 
 <!-- Ajout d'un bouton contact au menu -->
