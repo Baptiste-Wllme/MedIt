@@ -7413,3 +7413,6 @@ Stack trace:
 [19-Aug-2025 15:35:11 UTC] PHP Notice:  Array to string conversion in C:\Users\bapti\Local Sites\medit\app\public\wp-content\themes\oceanwp-child-theme-master\header.php on line 66
 [19-Aug-2025 15:35:26 UTC] PHP Notice:  Array to string conversion in C:\Users\bapti\Local Sites\medit\app\public\wp-content\themes\oceanwp-child-theme-master\header.php on line 66
 [19-Aug-2025 15:36:18 UTC] PHP Notice:  Array to string conversion in C:\Users\bapti\Local Sites\medit\app\public\wp-content\themes\oceanwp-child-theme-master\header.php on line 66
+[19-Aug-2025 15:40:22 UTC] PHP Notice:  Array to string conversion in C:\Users\bapti\Local Sites\medit\app\public\wp-content\themes\oceanwp-child-theme-master\header.php on line 66
+[19-Aug-2025 15:42:37 UTC] PHP Notice:  Array to string conversion in C:\Users\bapti\Local Sites\medit\app\public\wp-content\themes\oceanwp-child-theme-master\header.php on line 66
+[19-Aug-2025 15:42:40 UTC] PHP Notice:  Array to string conversion in C:\Users\bapti\Local Sites\medit\app\public\wp-content\themes\oceanwp-child-theme-master\header.php on line 66
