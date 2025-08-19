@@ -1,0 +1,22 @@
+# WordPress core
+wp-config.php
+wp-content/upgrade/
+wp-content/cache/
+wp-content/backups/
+wp-content/ai1wm-backups/
+
+# Uploads (éviter les fichiers lourds et sensibles)
+wp-content/uploads/
+
+# Logs
+*.log
+debug.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+node_modules/
