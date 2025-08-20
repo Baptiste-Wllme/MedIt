@@ -84,9 +84,16 @@ $lien=get_field('lien_google_maps', 161);
 document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.querySelector('.popup-close');
     const popupOverlay = document.querySelector('.popup-overlay');
+	const isNewsModalClosed = JSON.parse(localStorage.getItem('isNewsModalClosed'));
 
-    if(closeBtn && popupOverlay){
+	if (popupOverlay && !isNewsModalClosed) {
+		localStorage.setItem('isNewsModalClosed', false); 
+		popupOverlay.style.display = 'flex';
+    }
+
+    if (closeBtn && popupOverlay) {
         closeBtn.addEventListener('click', function() {
+			localStorage.setItem('isNewsModalClosed', true);
             popupOverlay.style.display = 'none';
         });
     }
